@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autonomous GHL & n8n AI Booking CRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #164e38; border-radius: 9999px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #10b981; }
+    [data-lucide] { stroke-width: 1.75; }
+  </style>
+</head>
+<body class="bg-[#040906] text-slate-100 flex h-screen overflow-hidden antialiased selection:bg-emerald-600 selection:text-white">
+
+  <!-- ==================== SIDEBAR (BLACK & FOREST EMERALD) ==================== -->
+  <aside class="w-80 md:w-88 bg-[#03140c] border-r border-[#0d3b24] flex flex-col justify-between shrink-0 select-none shadow-2xl z-20">
+    <div class="flex flex-col h-full overflow-hidden">
+      
+      <!-- Logo Header -->
+      <div class="p-5 border-b border-[#0d3b24] bg-[#020d08] flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-inner">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-extrabold text-white tracking-wide">GHL + n8n AI</h2>
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Enterprise</span>
+            </div>
+            <p class="text-[11px] text-emerald-400/70 font-medium">Autonomous Appointment Setter</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scrollable Navigation & Live Status -->
+      <div class="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+
+        <!-- Navigation Tabs -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 px-1">CRM Core Views</label>
+          <button class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-white font-semibold text-xs shadow-sm">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-emerald-400"></i>
+            <span>Lead Pipeline (Kanban)</span>
+          </button>
+          <button class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#092b1b] transition text-xs font-medium">
+            <i data-lucide="workflow" class="w-4 h-4 text-emerald-400"></i>
+            <span>n8n Orchestration Node</span>
+          </button>
+          <button class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#092b1b] transition text-xs font-medium">
+            <i data-lucide="calendar" class="w-4 h-4 text-emerald-400"></i>
+            <span>GHL Live Calendar (24h)</span>
+          </button>
+        </div>
+
+        <!-- Live Metrics Card -->
+        <div class="space-y-3">
+          <label class="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 px-1">Pipeline Performance</label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="bg-[#072416] border border-[#0f492c] rounded-xl p-3 shadow-sm">
+              <div class="text-[10px] font-semibold text-slate-300 uppercase">Leads Today</div>
+              <div class="text-xl font-extrabold text-white mt-1 flex items-baseline gap-1.5">
+                <span>38</span>
+                <span class="text-[10px] text-emerald-400 font-mono">+12.4%</span>
+              </div>
+            </div>
+            <div class="bg-[#072416] border border-[#0f492c] rounded-xl p-3 shadow-sm">
+              <div class="text-[10px] font-semibold text-slate-300 uppercase">Auto-Booked</div>
+              <div class="text-xl font-extrabold text-white mt-1 flex items-baseline gap-1.5">
+                <span>24</span>
+                <span class="text-[10px] text-emerald-400 font-mono">63.1%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-[#072416] border border-[#0f492c] rounded-xl p-3.5 space-y-2 text-xs text-slate-300">
+            <div class="flex justify-between items-center">
+              <span>Average AI Speed:</span>
+              <strong class="text-emerald-300 font-mono">11 Seconds</strong>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>No-Show Reduction:</span>
+              <strong class="text-emerald-300 font-mono">41.5%</strong>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Active Agent LLM:</span>
+              <span class="bg-[#020d08] text-emerald-300 text-[10px] px-2 py-0.5 rounded border border-[#0f492c] font-semibold">GPT-4o Mini</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulator Inbound Lead Trigger -->
+        <div class="space-y-2">
+          <label class="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 px-1">Test Inbound Lead (Webhook)</label>
+          <button onclick="simulateInboundLead()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.98] transition text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40">
+            <i data-lucide="zap" class="w-4 h-4"></i>
+            <span>Fire Meta Ad Lead Webhook</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Footer Info -->
+      <div class="p-4 border-t border-[#0d3b24] bg-[#020d08] text-[11px] text-slate-400 flex items-center justify-between">
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> n8n Listening</span>
+        <span class="font-mono text-emerald-400">v3.1.0</span>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN CRM WORKSPACE (CLEAN WHITE KANBAN & CHAT) ==================== -->
+  <main class="flex-1 flex flex-col h-full bg-[#f8fafc] text-slate-800 relative overflow-hidden">
+    
+    <!-- Top Bar -->
+    <header class="h-16 border-b border-slate-200/90 bg-white px-6 flex items-center justify-between shrink-0 z-10 shadow-xs">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+          </span>
+          <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Inbound AI Opportunity Board</span>
+        </div>
+        <span class="text-slate-300">•</span>
+        <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">GoHighLevel Sub-Account Connected</span>
+      </div>
+
+      <!-- Quick Action Badges -->
+      <div class="flex items-center gap-2">
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs">
+          All Opportunities (38)
+        </button>
+        <button onclick="clearActivityLog()" class="px-3 py-1.5 rounded-lg text-xs bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-medium transition shadow-xs">
+          Reset Demo
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area: Kanban + Live AI Execution Log -->
+    <div class="flex-1 flex overflow-hidden">
+      
+      <!-- 1. Interactive Kanban Pipeline Board -->
+      <section class="flex-1 overflow-x-auto overflow-y-hidden p-6 custom-scrollbar">
+        <div class="flex gap-4 h-full min-w-[950px]">
+
+          <!-- Column 1: New Leads -->
+          <div class="w-72 bg-slate-100/80 border border-slate-200 rounded-2xl flex flex-col h-full overflow-hidden">
+            <div class="p-3.5 border-b border-slate-200 bg-white/70 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700">1. New Ad Lead</span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700" id="count-new">1</span>
+            </div>
+            <div id="col-new" class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+              <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs space-y-2">
+                <div class="flex justify-between items-start">
+                  <span class="font-bold text-xs text-slate-900">Dr. Robert Chen</span>
+                  <span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Meta Ads</span>
+                </div>
+                <div class="text-[11px] text-slate-500">Service: MedSpa Laser Clinic</div>
+                <div class="text-[10px] font-mono text-emerald-700 font-semibold">Budget: $4,500</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: n8n AI Qualifying -->
+          <div class="w-72 bg-slate-100/80 border border-slate-200 rounded-2xl flex flex-col h-full overflow-hidden">
+            <div class="p-3.5 border-b border-slate-200 bg-white/70 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>2. AI Qualifying</span>
+              </span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" id="count-qualifying">1</span>
+            </div>
+            <div id="col-qualifying" class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+              <div class="bg-white p-3.5 rounded-xl border border-emerald-300 shadow-xs space-y-2">
+                <div class="flex justify-between items-start">
+                  <span class="font-bold text-xs text-slate-900">Sarah Jenkins</span>
+                  <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">Scoring...</span>
+                </div>
+                <div class="text-[11px] text-slate-500">SMS Qualification in progress</div>
+                <div class="text-[10px] font-mono text-emerald-600">Evaluating Intent Score</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 3: Auto-Booked Appointments -->
+          <div class="w-72 bg-emerald-50/50 border border-emerald-200 rounded-2xl flex flex-col h-full overflow-hidden">
+            <div class="p-3.5 border-b border-emerald-200 bg-white/80 flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                <i data-lucide="calendar-check-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>3. Meeting Booked</span>
+              </span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white" id="count-booked">2</span>
+            </div>
+            <div id="col-booked" class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+              
+              <div class="bg-white p-3.5 rounded-xl border border-emerald-300 shadow-xs space-y-2">
+                <div class="flex justify-between items-start">
+                  <span class="font-bold text-xs text-slate-900">Marcus Sterling</span>
+                  <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Tier 1 Lead</span>
+                </div>
+                <div class="text-[11px] text-slate-600">Consultation: VIP Scaling Plan</div>
+                <div class="text-[10px] font-semibold text-emerald-700 bg-emerald-50/80 p-1.5 rounded flex items-center gap-1">
+                  <i data-lucide="clock" class="w-3 h-3"></i> Oct 19, 2026 - 2:00 PM EST
+                </div>
+              </div>
+
+              <div class="bg-white p-3.5 rounded-xl border border-emerald-300 shadow-xs space-y-2">
+                <div class="flex justify-between items-start">
+                  <span class="font-bold text-xs text-slate-900">Elena Rostova</span>
+                  <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">High Intent</span>
+                </div>
+                <div class="text-[11px] text-slate-600">Consultation: Dental Implants</div>
+                <div class="text-[10px] font-semibold text-emerald-700 bg-emerald-50/80 p-1.5 rounded flex items-center gap-1">
+                  <i data-lucide="clock" class="w-3 h-3"></i> Oct 20, 2026 - 11:30 AM EST
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Column 4: Disqualified / Cold -->
+          <div class="w-72 bg-slate-100/80 border border-slate-200 rounded-2xl flex flex-col h-full overflow-hidden">
+            <div class="p-3.5 border-b border-slate-200 bg-white/70 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500">4. Disqualified / Spam</span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600" id="count-disqualified">1</span>
+            </div>
+            <div id="col-disqualified" class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+              <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs space-y-2 opacity-75">
+                <div class="flex justify-between items-start">
+                  <span class="font-bold text-xs text-slate-700">Anonymous Inquirer</span>
+                  <span class="text-[10px] font-semibold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded">Low Budget</span>
+                </div>
+                <div class="text-[11px] text-slate-400">Budget: $200 (Below Threshold)</div>
+                <div class="text-[10px] font-mono text-slate-400">Tag: AI_Disqualified</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 2. Right Activity Drawer: Live n8n Agent Telemetry -->
+      <aside class="w-96 bg-white border-l border-slate-200 flex flex-col justify-between shrink-0 shadow-sm">
+        <div class="p-4 border-b border-slate-200 bg-slate-50/60 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="terminal" class="w-4 h-4 text-emerald-700"></i>
+            <span class="text-xs font-bold text-slate-900">n8n Live Execution Telemetry</span>
+          </div>
+          <span class="text-[10px] font-mono text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">Active</span>
+        </div>
+
+        <div id="activityLog" class="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs custom-scrollbar">
+          
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl space-y-1.5">
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-emerald-700">WEBHOOK_INBOUND_RECEIVED</span>
+              <span class="text-slate-400 font-mono">10:48:12 AM</span>
+            </div>
+            <p class="text-slate-600 text-[11px]">Payload captured from Meta Lead Ads. GHL Contact ID created: <code>#c_994821</code>.</p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl space-y-1.5">
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-blue-700">AI_AGENT_EVALUATED</span>
+              <span class="text-slate-400 font-mono">10:48:18 AM</span>
+            </div>
+            <p class="text-slate-600 text-[11px]">Budget $4,500 qualified. Two-way SMS sent via GHL: "Would 2:00 PM EST work for your consult?"</p>
+          </div>
+
+          <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-1.5">
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-emerald-800">CALENDAR_SLOT_CONFIRMED</span>
+              <span class="text-emerald-600 font-mono">10:48:29 AM</span>
+            </div>
+            <p class="text-emerald-900 text-[11px] font-medium">Appointment locked in GHL Calendar. Automated 24h & 2h reminder sequences initiated.</p>
+          </div>
+
+        </div>
+
+        <div class="p-3 border-t border-slate-200 bg-slate-50/80 text-[11px] text-slate-500 text-center">
+          Zero lead leakage: Under 15s instant qualification
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    let leadCounter = 1;
+
+    function simulateInboundLead() {
+      leadCounter++;
+      const names = ["Alexander Wright", "Sophia Martinez", "David Kim", "Jessica Sterling"];
+      const services = ["Executive Real Estate", "Cosmetic Dentistry", "Commercial Solar", "B2B SaaS Advisory"];
+      const randomName = names[Math.floor(Math.random() * names.length)];
+      const randomService = services[Math.floor(Math.random() * services.length)];
+
+      const log = document.getElementById('activityLog');
+      const colNew = document.getElementById('col-new');
+      const colQualifying = document.getElementById('col-qualifying');
+      const colBooked = document.getElementById('col-booked');
+
+      const newCard = document.createElement('div');
+      newCard.id = `lead-${leadCounter}`;
+      newCard.className = "bg-white p-3.5 rounded-xl border border-emerald-400 shadow-md space-y-2 transition-all animate-pulse";
+      newCard.innerHTML = `
+        <div class="flex justify-between items-start">
+          <span class="font-bold text-xs text-slate-900">${randomName}</span>
+          <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">Just In</span>
+        </div>
+        <div class="text-[11px] text-slate-600">Service: ${randomService}</div>
+        <div class="text-[10px] font-mono text-emerald-700 font-semibold">Budget: $5,000+</div>
+      `;
+      colNew.prepend(newCard);
+
+      const log1 = document.createElement('div');
+      log1.className = "bg-slate-50 border border-slate-200 p-3 rounded-xl space-y-1.5";
+      log1.innerHTML = `
+        <div class="flex justify-between items-center text-[10px]">
+          <span class="font-bold text-emerald-700">INBOUND_LEAD_DETECTED</span>
+          <span class="text-slate-400 font-mono">${new Date().toLocaleTimeString()}</span>
+        </div>
+        <p class="text-slate-600 text-[11px]">${randomName} submitted Meta Ad Form. Triggering n8n AI webhook.</p>
+      `;
+      log.prepend(log1);
+
+      setTimeout(() => {
+        newCard.classList.remove('animate-pulse');
+        colQualifying.prepend(newCard);
+
+        const log2 = document.createElement('div');
+        log2.className = "bg-blue-50 border border-blue-200 p-3 rounded-xl space-y-1.5";
+        log2.innerHTML = `
+          <div class="flex justify-between items-center text-[10px]">
+            <span class="font-bold text-blue-700">AI_QUALIFICATION_SUCCESS</span>
+            <span class="text-slate-400 font-mono">${new Date().toLocaleTimeString()}</span>
+          </div>
+          <p class="text-blue-900 text-[11px]">Intent Score: High (94%). Sent custom two-way SMS slot proposal.</p>
+        `;
+        log.prepend(log2);
+      }, 1200);
+
+      setTimeout(() => {
+        colBooked.prepend(newCard);
+        newCard.className = "bg-white p-3.5 rounded-xl border border-emerald-300 shadow-xs space-y-2";
+        newCard.innerHTML = `
+          <div class="flex justify-between items-start">
+            <span class="font-bold text-xs text-slate-900">${randomName}</span>
+            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Auto-Booked</span>
+          </div>
+          <div class="text-[11px] text-slate-600">Service: ${randomService}</div>
+          <div class="text-[10px] font-semibold text-emerald-700 bg-emerald-50/80 p-1.5 rounded flex items-center gap-1">
+            <i data-lucide="clock" class="w-3 h-3"></i> Oct 21, 2026 - 3:30 PM EST
+          </div>
+        `;
+        lucide.createIcons();
+
+        const log3 = document.createElement('div');
+        log3.className = "bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-1.5";
+        log3.innerHTML = `
+          <div class="flex justify-between items-center text-[10px]">
+            <span class="font-bold text-emerald-800">MEETING_SCHEDULED_GHL</span>
+            <span class="text-emerald-600 font-mono">${new Date().toLocaleTimeString()}</span>
+          </div>
+          <p class="text-emerald-900 text-[11px]">Calendar event locked for ${randomName}. 24h SMS reminder queued.</p>
+        `;
+        log.prepend(log3);
+      }, 2500);
+    }
+
+    function clearActivityLog() {
+      alert("Demo pipeline reset. You can fire new simulated leads to test the workflow.");
+    }
+  </script>
+</body>
+</html>

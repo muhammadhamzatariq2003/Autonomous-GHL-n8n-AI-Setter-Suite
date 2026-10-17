@@ -1,0 +1,670 @@
+{
+  "name": "Enterprise Autonomous Meta & Google Ads AI Booking Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "event": "form_submission",
+        "formId": "meta_lead_ad_form_01"
+      },
+      "id": "node_meta_ads",
+      "name": "Meta Lead Ads (FB & Insta)",
+      "type": "n8n-nodes-base.facebookLeadAdsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "event": "lead_submitted",
+        "campaignId": "google_search_ads_lead_campaign"
+      },
+      "id": "node_google_ads",
+      "name": "Google Ads (Search & Forms)",
+      "type": "n8n-nodes-base.googleAdsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ghl-meta-ad-inbound",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node_webhook_inbound",
+      "name": "GHL Inbound Webhook (Ads/Form)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        60,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"acknowledged\",\n  \"event\": \"Ad_Lead_Captured\",\n  \"message\": \"200 OK sent to GHL. n8n background setter active.\",\n  \"received_at\": new Date().toISOString()\n}",
+        "options": {}
+      },
+      "id": "node_respond_200",
+      "name": "Respond 200 OK to GHL",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        300,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize incoming payload from Meta Ads, Google Ads or GHL webhook\nconst body = $json.body || $json;\nconst custom = body.customData || {};\n\nconst contactId = body.contact_id || body.id || \"c_\" + Math.floor(Math.random() * 899999 + 100000);\nconst fullName = body.full_name || body.name || (body.first_name ? `${body.first_name} ${body.last_name || ''}`.trim() : \"Valued Prospect\");\nconst phone = body.phone || \"+1202555\" + Math.floor(Math.random() * 8999 + 1000);\nconst email = body.email || `lead_${contactId}@clientcorp.com`;\nconst adSource = body.source || custom.ad_platform || ($('Meta Lead Ads (FB & Insta)').item ? \"Meta Ads (Instagram / FB)\" : \"Google Ads (Search / Assets)\");\nconst service = body.service || custom.service_interest || \"High-Value Consultation\";\nconst rawBudget = String(body.budget || custom.budget || \"$3,500\");\n\nlet numericBudget = 3500;\nconst budgetDigits = rawBudget.replace(/[^0-9]/g, '');\nif (budgetDigits) {\n  numericBudget = parseInt(budgetDigits, 10);\n}\n\nreturn {\n  contact_id: contactId,\n  full_name: fullName,\n  first_name: fullName.split(' ')[0],\n  email: email,\n  phone: phone,\n  ad_source: adSource,\n  service_interest: service,\n  budget_raw: rawBudget,\n  budget_numeric: numericBudget,\n  qualification_threshold: 2500,\n  created_at: new Date().toISOString()\n};"
+      },
+      "id": "node_normalize",
+      "name": "Normalize & Sanitize Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://services.leadconnectorhq.com/calendars/cal_enterprise_main_01/free-slots",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GHL_API_KEY"
+            },
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startDate",
+              "value": "={{ $today.plus({days: 1}).toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "endDate",
+              "value": "={{ $today.plus({days: 4}).toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "timezone",
+              "value": "America/New_York"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node_http_slots",
+      "name": "Query GHL Calendar Available Slots",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Lead Information:\nName: {{$('Normalize & Sanitize Lead').item.json.full_name}}\nService: {{$('Normalize & Sanitize Lead').item.json.service_interest}}\nBudget: {{$('Normalize & Sanitize Lead').item.json.budget_raw}} (${{$('Normalize & Sanitize Lead').item.json.budget_numeric}})\nCampaign Source: {{$('Normalize & Sanitize Lead').item.json.ad_source}}\nAvailable Slots: Tomorrow 2:30 PM EST, Thursday 10:30 AM EST",
+        "options": {
+          "systemMessage": "You are an Autonomous AI Appointment Setter for GoHighLevel CRM.\n- If budget >= $2,500: mark qualified=true, draft high-converting SMS acknowledging their ad source, propose slots.\n- If budget < $2,500: offer $99/mo zero-down financing. If refused, mark qualified=false.\n\nOutput JSON:\n{\n  \"qualified\": true,\n  \"intent_score\": 96,\n  \"recommended_slot\": \"Tomorrow at 2:30 PM EST\",\n  \"sms_pitch\": \"Hi [Name], thanks for inquiring through our ad! We have VIP consultation slots open tomorrow at 2:30 PM EST. Would that work?\"\n}"
+        }
+      },
+      "id": "node_langchain_agent",
+      "name": "LangChain Autonomous Setter Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        800,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "node_openai_model",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        720,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 5
+      },
+      "id": "node_memory_window",
+      "name": "Conversation Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [
+        900,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.output?.qualified !== undefined ? $json.output.qualified : ($('Normalize & Sanitize Lead').item.json.budget_numeric >= 2500) }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "node_if_qualified",
+      "name": "Is Lead Qualified?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/calendars/events/appointments",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GHL_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "calendarId",
+              "value": "cal_enterprise_main_01"
+            },
+            {
+              "name": "contactId",
+              "value": "={{ $('Normalize & Sanitize Lead').item.json.contact_id }}"
+            },
+            {
+              "name": "startTime",
+              "value": "2026-10-22T14:30:00-04:00"
+            },
+            {
+              "name": "selectedTimezone",
+              "value": "America/New_York"
+            },
+            {
+              "name": "status",
+              "value": "confirmed"
+            },
+            {
+              "name": "title",
+              "value": "={{ $('Normalize & Sanitize Lead').item.json.service_interest }} Consult - {{ $('Normalize & Sanitize Lead').item.json.full_name }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node_http_book_calendar",
+      "name": "Lock GHL Calendar Appointment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/conversations/messages",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GHL_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "SMS"
+            },
+            {
+              "name": "contactId",
+              "value": "={{ $('Normalize & Sanitize Lead').item.json.contact_id }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('LangChain Autonomous Setter Agent').item.json.output?.sms_pitch || 'Your VIP Consultation has been confirmed! We sent the calendar details to your email.' }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node_http_send_sms",
+      "name": "Send AI SMS via Twilio/GHL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1580,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendTemplate",
+        "phoneNumberId": "YOUR_WHATSAPP_PHONE_ID",
+        "recipientPhoneNumber": "={{ $('Normalize & Sanitize Lead').item.json.phone }}",
+        "templateName": "appointment_confirmed_gps"
+      },
+      "id": "node_native_whatsapp",
+      "name": "WhatsApp (Confirmation & GPS)",
+      "type": "n8n-nodes-base.whatsapp",
+      "typeVersion": 1,
+      "position": [
+        1820,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/opportunities",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GHL_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "pipelineId",
+              "value": "pipe_inbound_setter_01"
+            },
+            {
+              "name": "stageId",
+              "value": "stage_meeting_scheduled"
+            },
+            {
+              "name": "contactId",
+              "value": "={{ $('Normalize & Sanitize Lead').item.json.contact_id }}"
+            },
+            {
+              "name": "name",
+              "value": "={{ $('Normalize & Sanitize Lead').item.json.full_name }} (AI Booked)"
+            },
+            {
+              "name": "monetaryValue",
+              "value": "={{ $('Normalize & Sanitize Lead').item.json.budget_numeric }}"
+            },
+            {
+              "name": "status",
+              "value": "open"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node_http_update_opp",
+      "name": "Update GHL Opportunity (Booked)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2060,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "ENTERPRISE_AD_CAMPAIGN_TRACKER_SHEET",
+        "options": {}
+      },
+      "id": "node_google_sheets",
+      "name": "Sync Lead to Google Sheets (Backup)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        2300,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/contacts/{{ $('Normalize & Sanitize Lead').item.json.contact_id }}/tags",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GHL_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tags",
+              "value": "[\"AI_Disqualified\", \"Low_Budget_Spam\", \"Cold_Nurture\"]"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node_http_tag_disq",
+      "name": "Tag Disqualified & Archive in GHL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/conversations/messages",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GHL_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "SMS"
+            },
+            {
+              "name": "contactId",
+              "value": "={{ $('Normalize & Sanitize Lead').item.json.contact_id }}"
+            },
+            {
+              "name": "message",
+              "value": "We understand! Since our medical-grade procedures require an initial threshold above your current budget, we won't be able to proceed right now. We've emailed free resource guides for you. Wishing you the best!"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node_http_reject_sms",
+      "name": "Send Polite Archival Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1580,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "Meta Lead Ads (FB & Insta)": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Sanitize Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Ads (Search & Forms)": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Sanitize Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GHL Inbound Webhook (Ads/Form)": {
+      "main": [
+        [
+          {
+            "node": "Respond 200 OK to GHL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Normalize & Sanitize Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize & Sanitize Lead": {
+      "main": [
+        [
+          {
+            "node": "Query GHL Calendar Available Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query GHL Calendar Available Slots": {
+      "main": [
+        [
+          {
+            "node": "LangChain Autonomous Setter Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LangChain Autonomous Setter Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "LangChain Autonomous Setter Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LangChain Autonomous Setter Agent": {
+      "main": [
+        [
+          {
+            "node": "Is Lead Qualified?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Lead Qualified?": {
+      "main": [
+        [
+          {
+            "node": "Lock GHL Calendar Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tag Disqualified & Archive in GHL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lock GHL Calendar Appointment": {
+      "main": [
+        [
+          {
+            "node": "Send AI SMS via Twilio/GHL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send AI SMS via Twilio/GHL": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp (Confirmation & GPS)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp (Confirmation & GPS)": {
+      "main": [
+        [
+          {
+            "node": "Update GHL Opportunity (Booked)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update GHL Opportunity (Booked)": {
+      "main": [
+        [
+          {
+            "node": "Sync Lead to Google Sheets (Backup)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tag Disqualified & Archive in GHL": {
+      "main": [
+        [
+          {
+            "node": "Send Polite Archival Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
